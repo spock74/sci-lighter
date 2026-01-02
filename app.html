@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WebMark Pro Core (Sandbox)</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.24.0/babel.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <script>
+      tailwind.config = {
+        darkMode: ['selector', '[data-theme="dark"]'],
+        theme: {
+          extend: {
+            colors: {
+              primary: 'rgb(var(--primary) / <alpha-value>)',
+              'primary-hover': 'rgb(var(--primary-hover) / <alpha-value>)',
+              page: 'rgb(var(--bg-page) / <alpha-value>)',
+              surface: 'rgb(var(--bg-surface) / <alpha-value>)',
+              muted: 'rgb(var(--text-muted) / <alpha-value>)',
+              main: 'rgb(var(--text-main) / <alpha-value>)',
+              'border-subtle': 'rgb(var(--border-subtle) / <alpha-value>)',
+            },
+            boxShadow: { 'pro': 'var(--shadow-pro)' }
+          }
+        }
+      }
+    </script>
+    <style>@import url('index.css');</style>
+</head>
+<body class="bg-page text-main">
+    <div id="root">
+        <div class="flex flex-col items-center justify-center min-h-screen space-y-6">
+            <div class="relative w-20 h-20">
+                <div class="absolute inset-0 border-4 border-indigo-100 rounded-2xl"></div>
+                <div class="absolute inset-0 border-4 border-indigo-600 rounded-2xl animate-spin [animation-duration:3s]"></div>
+                <div class="absolute inset-0 flex items-center justify-center">
+                    <svg class="w-10 h-10 text-indigo-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                    </svg>
+                </div>
+            </div>
+            <div class="text-center">
+                <p class="text-lg font-bold text-gray-900 dark:text-white uppercase tracking-tighter">WebMark Pro</p>
+                <p class="text-[10px] font-black text-indigo-600 uppercase tracking-[0.3em] animate-pulse">Iniciando Ambiente Sandbox...</p>
+            </div>
+        </div>
+    </div>
+
+    <script type="text/javascript">
+      async function bootstrap() {
+        const root = document.getElementById('root');
+        
+        const filesToLoad = [
+          'types.ts',
+          'LanguageContext.tsx',
+          'ThemeContext.tsx',
+          'translations.ts',
+          'services/db.ts',
+          'services/cloud.ts',
+          'services/gemini.ts',
+          'store/useStore.ts',
+          'hooks/useProjectState.ts',
+          'components/ArticleContent.tsx',
+          'components/MainHeader.tsx',
+          'components/Toolbar.tsx',
+          'components/AnnotationCanvas.tsx',
+          'components/SidebarHighlights.tsx',
+          'components/LayersPanel.tsx',
+          'components/Workbench.tsx',
+          'components/SelectionMenu.tsx',
+          'components/AIInsightsPanel.tsx',
+          'components/AnnotationEditModal.tsx',
+          'components/LiveTranscriptionPanel.tsx',
+          'components/LoginScreen.tsx',
+          'App.tsx',
+          'kernel.tsx'
+        ];
+
+        const transpiledBlobs = {};
+        const externalImports = {
+          "react": "https://esm.sh/react@19.2.3",
+          "react-dom": "https://esm.sh/react-dom@19.2.3",
+          "react-dom/client": "https://esm.sh/react-dom@19.2.3/client",
+          "lucide-react": "https://esm.sh/lucide-react@0.562.0",
+          "zustand": "https://esm.sh/zustand@5.0.9",
+          "dexie": "https://esm.sh/dexie@4.2.1",
+          "@google/genai": "https://esm.sh/@google/genai@1.34.0" 
+        };
+
+        try {
+          console.log('Sandbox: Iniciando transpilação...');
+          
+          for (const file of filesToLoad) {
+            const res = await fetch(file);
+            if (!res.ok) throw new Error(`Falha ao carregar ${file}`);
+            
+            let code = await res.text();
+            code = code.replace(/import\s+['"].*?\.css['"];?/g, '');
+            
+            const transformed = Babel.transform(code, {
+              presets: ['react', 'typescript'],
+              filename: file,
+            }).code;
+
+            const finalCode = transformed.replace(/from\s+['"]\.\.?\/(.*?)['"]/g, (match, path) => {
+                const cleanPath = path.replace(/\.(tsx|ts|js)$/, '');
+                return `from '${cleanPath}'`;
+            });
+
+            const blob = new Blob([finalCode], { type: 'application/javascript' });
+            transpiledBlobs[file] = URL.createObjectURL(blob);
+          }
+
+          const imports = { ...externalImports };
+          
+          for (const file of filesToLoad) {
+            const blobUrl = transpiledBlobs[file];
+            const cleanKey = file.replace(/\.(tsx|ts)$/, '');
+            
+            imports[cleanKey] = blobUrl;
+            imports[file] = blobUrl;
+            
+            if (cleanKey.includes('/')) {
+                const parts = cleanKey.split('/');
+                const fileName = parts[parts.length - 1];
+                imports[fileName] = blobUrl;
+            }
+          }
+
+          const imScript = document.createElement('script');
+          imScript.type = 'importmap';
+          imScript.textContent = JSON.stringify({ imports });
+          document.head.appendChild(imScript);
+
+          const entry = document.createElement('script');
+          entry.type = 'module';
+          entry.src = transpiledBlobs['kernel.tsx'];
+          document.body.appendChild(entry);
+
+          console.log('Sandbox: Ambiente inicializado com sucesso.');
+        } catch (err) {
+          console.error('Erro no Sandbox:', err);
+          root.innerHTML = `<div class="p-10 text-red-600 bg-white shadow-xl rounded-2xl"><h2>Erro de Inicialização</h2><p>${err.message}</p></div>`;
+        }
+      }
+      bootstrap();
+    </script>
+</body>
+</html>
