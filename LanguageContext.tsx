@@ -13,7 +13,7 @@ const LanguageContext = createContext<LanguageContextType | undefined>(undefined
 export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [locale, setLocale] = useState<Locale>(() => {
     try {
-      const saved = localStorage.getItem('webmark_locale');
+      const saved = localStorage.getItem('scilighter_locale');
       return (saved as Locale) || 'en';
     } catch (error) {
       console.warn('Could not access localStorage for locale. Defaulting to "en".');
@@ -23,7 +23,7 @@ export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ chil
 
   useEffect(() => {
     try {
-      localStorage.setItem('webmark_locale', locale);
+      localStorage.setItem('scilighter_locale', locale);
     } catch (error) {
       console.warn('Could not access localStorage to save locale.');
     }

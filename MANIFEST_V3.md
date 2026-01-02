@@ -1,12 +1,12 @@
 
 # Production Manifest V3 Template
 
-Use this template when packaging WebMark Pro for the Chrome Web Store.
+Use this template when packaging Sci-Lighter for the Chrome Web Store.
 
 ```json
 {
   "manifest_version": 3,
-  "name": "WebMark Pro",
+  "name": "Sci-Lighter",
   "version": "1.0.0",
   "description": "Advanced text annotation and sketching for research.",
   "permissions": [
@@ -26,7 +26,7 @@ Use this template when packaging WebMark Pro for the Chrome Web Store.
     "default_path": "index.html"
   },
   "action": {
-    "default_title": "Open WebMark Pro"
+    "default_title": "Open Sci-Lighter"
   },
   "content_scripts": [
     {

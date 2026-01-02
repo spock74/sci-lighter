@@ -1,6 +1,6 @@
 {
   "manifest_version": 3,
-  "name": "WebMark Pro: Advanced Page Annotator",
+  "name": "Sci-Lighter: Advanced Page Annotator",
   "version": "1.1.9",
   "description": "A Manifest V3 compliant high-performance annotation and sketching tool for researchers.",
   "permissions": [
@@ -11,7 +11,7 @@
     "tabs"
   ],
   "action": {
-    "default_title": "Open WebMark Pro"
+    "default_title": "Open Sci-Lighter"
   },
   "host_permissions": [
     "<all_urls>"

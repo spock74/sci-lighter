@@ -1,97 +1,131 @@
 
-# WebMark Pro: The Pedagogical Knowledge Engine
+# Sci-Lighter (Alpha Preview)
 
-WebMark Pro is a experimental intenbded to be a high-performance, browser-native **Personal Knowledge Management (PKM)** tool. The goal is transforms the web from a static canvas into a dynamic research laboratory, enabling anyone to annotate, sketch, and synthesize knowledge across disparate sources. If it reachs the point to be useful to researchers, mission cconplieshed.
+**Sci-Lighter** is an experimental open-source browser extension designed to explore new ways of interacting with web content. It aims to bridge the gap between passive reading and active knowledge construction by providing tools for highlighting, annotation, and synthesis directly within the browser. It features cross-annotation linking across multiple sources, integrating AI-assisted summaries, comparisons, and insights. 
+
+> [!WARNING]
+> **Status: Experimental / Alpha**
+> This project is currently in early development. It is **not production-ready**. Features may change, and bugs are expected. It serves as a proof-of-concept for a modern, React-based extension architecture using Manifest V3.
 
 [![Framework](https://img.shields.io/badge/Framework-React_19-61DAFB?logo=react)](https://react.dev/)
 [![Manifest](https://img.shields.io/badge/Chrome-Manifest_V3-4285F4?logo=google-chrome)](./MANIFEST_V3.md)
-[![Design](https://img.shields.io/badge/Theme-Pro_Dark_Mode-blueviolet)](./ThemeContext.tsx)
-[![i18n](https://img.shields.io/badge/i18n-EN_|_PT-green)](./translations.ts)
-
+[![License](https://img.shields.io/badge/License-MIT-green)](./LICENSE)
 
 ---
 
-## 🛡️ Security & Compliance (Defense in Depth)
+## Architecture & Design
 
-This project adheres to international security standards to ensure the highest level of trustworthiness. We employ a **Positive Security Model** (Strict Whitelisting) rather than relying on blacklist-based filtering.
+WebMark Pro implements a **Hybrid Architecture** to balance the rich interactivity of modern web apps with the strict security constraints of Chrome Manifest V3.
 
-### Standards & Protocols
-- **OWASP**: Compliant with [OWASP XSS Prevention Cheat Sheet](https://cheatsheetseries.owasp.org/cheatsheets/Cross_Site_Scripting_Prevention_Cheat_Sheet.html) (Rule #3: Sanitize with a dedicated library).
-- **ISO 27001**: Implements "Defense in Depth" and "Least Privilege" principles.
-- **Manifest V3**: Leverages the "Nuclear Option" of browser-enforced strict Content Security Policy (CSP).
+### High-Level System Overview
 
-### Layered Defense Architecture
-1.  **Strict Sanitization (Layer 1)**:
-    -   All HTML content is sanitized via `DOMPurify` using a **Strict Whitelist**.
-    -   Only safe semantic tags (`p`, `h1`, `mark`, etc.) are allowed.
-    -   Dangerous vectors (`<script>`, `<iframe>`, `object`, `onclick`) are explicitly destroyed before rendering.
-
-2.  **Browser CSP (Layer 2)**:
-    -   Adheres to Chrome's strict Manifest V3 `content_security_policy`.
-    -   `script-src 'self'`: Prevents execution of *any* inline script or unapproved external source, rendering XSS attacks inert availability.
-
----
-
-## 🏗 System Architecture
-
-The application is built on a **Modular Slice Architecture** with a high-performance **Component Composition Pattern**.
+The system is composed of two isolated contexts—the **Side Panel** (Extension Context) and the **Content Script** (Page Context)—communicating via a secure, type-safe Bridge.
 
 ```mermaid
 graph TD
-    subgraph "Context Layer"
-        L[LanguageContext]
-        T[ThemeContext]
+    subgraph "Browser Environment"
+        subgraph "Page Context (Unsafe)"
+            DOM[Web Page DOM]
+            CS["Content Script (TS)"]
+            Mark[mark.js Library]
+            
+            DOM <-->|Mutation| Mark
+            Mark <-->|Control| CS
+            CS -- "Text Selection" --> Bridge
+        end
+
+        subgraph "Extension Context (Secure)"
+            SidePanel["Side Panel (React 19)"]
+            Background[Service Worker]
+            
+            subgraph "State Management"
+                Zustand[Zustand Store]
+                DB["IndexedDB (Local)"]
+            end
+            
+            SidePanel <--> Zustand
+            Zustand <--> DB
+            Zustand -- "Actions" --> Bridge
+        end
+
+        Bridge[Secure Message Bridge]
+        
+        CS <-->|JSON Messages| Bridge
+        Bridge <-->|JSON Messages| SidePanel
+        Bridge <-->|JSON Messages| Background
     end
 
-    subgraph "UI Layer (Composition Pattern)"
-        A[Orchestrator Components] --> B[Atomic Cards/Molecules]
-        B --> C[Shared UI Elements]
-    end
-
-    subgraph "State Management (Zustand)"
-        D[Zustand Store] --> D1[Auth Slice]
-        D --> D2[Project Slice]
-        D --> D3[UI Slice]
-        D --> D4[History Slice]
-    end
-
-    subgraph "Intelligence & Persistence"
-        E[Gemini API] -->|AI Insights| D2
-        F[Live API] -->|Voice Discussion| D2
-        G[Broadcast Channel] -->|Functional Sync| D2
-        H[Local Storage] -->|Persistence| D2
-    end
-
-    L -.-> A
-    T -.-> A
+    classDef secure fill:#e1f5fe,stroke:#01579b,stroke-width:2px;
+    classDef unsafe fill:#ffebee,stroke:#b71c1c,stroke-width:2px;
+    
+    class SidePanel,Background,Zustand,DB secure;
+    class DOM,CS,Mark unsafe;
 ```
 
-## 🧠 Core Pedagogical Features
+### Key Components
 
-### 1. The Modular Workbench
-A dedicated staging area to bridge insights across different websites. Users can link disparate highlights and write "Synapses"—original conclusions that form your personal knowledge graph.
+1.  **Side Panel (The "Brain")**:
+    *   Built with **React 19** and **Shadcn UI**.
+    *   Hosts the entire application logic, state management (**Zustand**), and user interface.
+    *   Runs in a secure, isolated extension context.
 
-### 2. Pro Theme Engine & Localization
-- **Adaptive UI**: Switch between Light and Dark modes with a single click. The entire UI is built on CSS variables that update dynamically.
-- **Full i18n**: Support for English and Portuguese (PT-BR), ensuring researchers can work in their native tongue.
+2.  **Content Script (The "Hands")**:
+    *   Lightweight script injected into the web page.
+    *   Responsible *only* for DOM manipulation (rendering highlights using `mark.js`) and capturing user events (text selection).
+    *   Communicates strictly via JSON messages.
 
-### 3. Smart Sidebars
-Context-aware sidebars that filter, sort, and search your research history. Extracted card components ensure a responsive, high-fidelity UI that scales with thousands of highlights.
-
-### 4. Deep-Link Teleportation
-Using the **Chrome Text Fragment API**, the app generates non-brittle deep links. Jump from a summary directly to the exact paragraph on the original source page.
-
-### 5. AI-Powered Discussion
-Integrates the **Gemini Live API** for real-time voice conversations about your research. Challenge your own synthesis with AI-driven dialectic.
-
-## 🛠 Tech Stack
-
-- **Core**: React 19 (ESM), TypeScript.
-- **State**: Zustand (Slice Pattern) with Functional Updates.
-- **Styling**: Tailwind CSS + CSS Variables (Custom Variable-First approach).
-- **Graphics**: HTML5 Canvas (Quadratic Curve smoothing).
-- **Communication**: BroadcastChannel API for multi-tab synchronization.
+3.  **The Bridge**:
+    *   A strongly-typed messaging layer that decouples the UI from the DOM.
+    *   Prevents direct access to extension APIs from the web page.
 
 ---
 
-For development guidelines, see [CONTRIBUTING.md](./CONTRIBUTING.md).
+## Security Approach
+
+Security is a primary concern, especially for an extension that handles user data and interacts with arbitrary web pages.
+
+### 1. Strict Content Security Policy (CSP)
+We adhere to the strict **Manifest V3** CSP. 
+*   **`script-src 'self'`**: No external scripts are loaded. All logic is bundled locally.
+*   **`object-src 'none'`**: Flash and other plugins are disabled.
+
+### 2. Message Sanitization & Validation
+The **Bridge** acts as a firewall between the untrusted web page and the privileged extension context.
+*   **Input Validation**: All messages from the Content Script are treated as untrusted. Payloads (like selected text) are treated as strings, never evaluated as code.
+*   **XSS Mitigation**: We do not use `innerHTML` directly with user-provided content. When rendering text in the UI, React's standard escaping is used. On the page, `mark.js` handles DOM insertion safely.
+
+### 3. Isolation
+The Side Panel runs in its own process, isolated from the web page's JavaScript. Malicious scripts on a visited website cannot access the extension's `localStorage` or `IndexedDB` directly.
+
+---
+
+## Tech Stack
+
+*   **Language**: TypeScript 5+ (Strict Mode)
+*   **Frontend**: React 19, Tailwind CSS, Shadcn UI
+*   **State**: Zustand (with Immer for immutability)
+*   **Build Tool**: Vite (with CRXJS plugin for HMR)
+*   **Testing**: Vitest (Unit & Integration)
+*   **Linting**: ESLint + Prettier
+
+---
+
+## Known Limitations (Alpha)
+
+*   **Persistence**: Currently uses local storage/IndexedDB. Cloud sync is a work-in-progress.
+*   **PDF Support**: Not yet implemented. Works best on standard HTML articles.
+*   **Mobile**: Not optimized for mobile browsers.
+
+---
+
+## Contributing
+
+We welcome feedback and contributions to help mature this experimental project. Please see [CONTRIBUTING.md](./CONTRIBUTING.md) for guidelines.
+
+1.  Clone the repository.
+2.  Install dependencies: `pnpm install`
+3.  Start dev server: `pnpm dev`
+4.  Load distinct folder in Chrome Extensions (Developer Mode).
+
+---
+*Disclaimer: This is a personal research project. Use at your own risk.*

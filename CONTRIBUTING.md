@@ -1,5 +1,5 @@
 
-# Contributing to WebMark Pro
+# Contributing to Sci-Lighter
 
 Thank you for contributing! To maintain extension-grade quality, please adhere to these standards.
 

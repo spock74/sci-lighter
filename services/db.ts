@@ -3,17 +3,17 @@ import Dexie, { type EntityTable } from 'dexie';
 import { AnnotationProject, User } from '../types';
 
 /**
- * WebMark DB - High performance persistence layer
+ * Sci-Lighter DB - High performance persistence layer
  */
 // Fix: Extending from the default Dexie export ensures that prototype methods like version() 
 // are correctly inherited and accessible within the subclass constructor.
-class WebMarkDatabase extends Dexie {
+class SciLighterDatabase extends Dexie {
   projects!: EntityTable<AnnotationProject, 'id'>;
   users!: EntityTable<User, 'id'>;
 
   constructor() {
     // Initializing the database with its name
-    super('WebMarkProDB');
+    super('SciLighterProDB');
     
     // Defining the database schema. 
     // The version() method is inherited from the Dexie base class.
@@ -24,7 +24,7 @@ class WebMarkDatabase extends Dexie {
   }
 }
 
-export const db = new WebMarkDatabase();
+export const db = new SciLighterDatabase();
 
 export const saveProjectToDB = async (project: AnnotationProject) => {
   try {

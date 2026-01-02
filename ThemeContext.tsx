@@ -21,7 +21,7 @@ const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 export const ThemeProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [theme, setTheme] = useState<ThemeMode>(() => {
     try {
-      const saved = localStorage.getItem('webmark_theme');
+      const saved = localStorage.getItem('scilighter_theme');
       if (saved) return saved as ThemeMode;
     } catch (error) {
       console.warn('Could not access localStorage for theme. Defaulting to system preference.');
@@ -32,7 +32,7 @@ export const ThemeProvider: React.FC<{ children: ReactNode }> = ({ children }) =
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', theme);
     try {
-      localStorage.setItem('webmark_theme', theme);
+      localStorage.setItem('scilighter_theme', theme);
     } catch (error) {
       console.warn('Could not access localStorage to save theme.');
     }

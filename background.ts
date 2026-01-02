@@ -5,5 +5,5 @@ chrome.sidePanel
   .catch((error) => console.error("Erro ao configurar sidePanel:", error));
 
 chrome.runtime.onInstalled.addListener(() => {
-  console.log('WebMark Pro: Extensão instalada e pronta.');
+  console.log('Sci-Lighter: Extensão instalada e pronta.');
 });

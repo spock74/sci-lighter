@@ -3,7 +3,7 @@ export type Locale = 'en' | 'pt';
 
 export const translations = {
   en: {
-    app_name: 'WebMark Pro',
+    app_name: 'Sci-Lighter',
     recent_pages: 'Recent Pages',
     my_highlights: 'My Highlights',
     active_collaborators: 'Active Collaborators',
@@ -42,7 +42,7 @@ export const translations = {
     navigate: 'Navigate',
     clear_all: 'Clear All',
     sync_manually: 'Sync Manually',
-    sign_in_title: 'Sign in to WebMark Pro',
+    sign_in_title: 'Sign in to Sci-Lighter',
     sign_in_desc: 'Sync your annotations and collaborate with others in real-time.',
     language: 'Language',
     undo: 'Undo',
@@ -104,7 +104,7 @@ export const translations = {
 
   },
   pt: {
-    app_name: 'WebMark Pro',
+    app_name: 'Sci-Lighter',
     recent_pages: 'Páginas Recentes',
     my_highlights: 'Meus Destaques',
     active_collaborators: 'Colaboradores Ativos',
@@ -143,7 +143,7 @@ export const translations = {
     navigate: 'Navegar',
     clear_all: 'Limpar Tudo',
     sync_manually: 'Sincronizar Manualmente',
-    sign_in_title: 'Entrar no WebMark Pro',
+    sign_in_title: 'Entrar no Sci-Lighter',
     sign_in_desc: 'Sincronize suas anotações e colabore em tempo real.',
     language: 'Idioma',
     undo: 'Desfazer',

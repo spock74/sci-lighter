@@ -1,7 +1,7 @@
 
 import { AnnotationProject, User, DrawingPath, TextAnnotation } from "../types";
 
-const CHANNEL_NAME = 'webmark_pro_sync';
+const CHANNEL_NAME = 'scilighter_pro_sync';
 const syncChannel = new BroadcastChannel(CHANNEL_NAME);
 
 export const MOCK_USERS: User[] = [
@@ -23,7 +23,7 @@ export const subscribeToUpdates = (callback: (data: any) => void) => {
 export const saveToCloud = async (project: AnnotationProject): Promise<boolean> => {
   // Simulate network latency
   await new Promise(resolve => setTimeout(resolve, 800));
-  const projects = JSON.parse(localStorage.getItem('webmark_cloud_storage') || '[]');
+  const projects = JSON.parse(localStorage.getItem('scilighter_cloud_storage') || '[]');
   const index = projects.findIndex((p: any) => p.id === project.id);
   
   if (index >= 0) {
@@ -32,12 +32,12 @@ export const saveToCloud = async (project: AnnotationProject): Promise<boolean> 
     projects.push(project);
   }
   
-  localStorage.setItem('webmark_cloud_storage', JSON.stringify(projects));
+  localStorage.setItem('scilighter_cloud_storage', JSON.stringify(projects));
   return true;
 };
 
 export const loadFromCloud = async (userId: string): Promise<AnnotationProject[]> => {
-  const data = localStorage.getItem('webmark_cloud_storage');
+  const data = localStorage.getItem('scilighter_cloud_storage');
   if (!data) return [];
   const allProjects: AnnotationProject[] = JSON.parse(data);
   // Return projects owned by user or where they are a collaborator

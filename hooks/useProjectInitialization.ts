@@ -36,22 +36,22 @@ export const useProjectInitialization = () => {
                 return;
             }
 
-            console.log("WebMark Pro: Requesting content for tab", tab.id);
+            console.log("Sci-Lighter: Requesting content for tab", tab.id);
             let pageData = await getPageContent(tab.id, 1, true);
 
             if (!pageData) {
-                console.log("WebMark Pro: Content script not found, injecting...");
+                console.log("Sci-Lighter: Content script not found, injecting...");
                 await injectContentScript(tab.id);
                 const isConnected = await ensureContentConnection(tab.id);
                 if (isConnected) {
                     pageData = await getPageContent(tab.id);
                 } else {
-                    console.warn("WebMark Pro: Content script failed to connect after injection");
+                    console.warn("Sci-Lighter: Content script failed to connect after injection");
                 }
             }
 
             if (!pageData) {
-                console.error("WebMark Pro: Failed to get content after retry.");
+                console.error("Sci-Lighter: Failed to get content after retry.");
                 setProject(prev => ({ ...prev, title: tab.title || 'Unknown', url: tab.url || '', content: t('content_extraction_failed') }));
             } else {
                 const projectId = btoa(pageData.url).slice(0, 32); 

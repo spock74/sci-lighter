@@ -2,7 +2,7 @@ import Mark from 'mark.js';
 import { Readability } from '@mozilla/readability';
 import { BridgeAction, BridgeMessage, SelectionPayload, ScrollPayload, LocalePayload } from './services/bridge';
 
-console.log("WebMark Pro: Content script loading...");
+console.log("Sci-Lighter: Content script loading...");
 
 // --- Global State ---
 let markInstance: any = null;
@@ -10,7 +10,7 @@ let currentLocale: 'en' | 'pt' = 'en';
 
 // --- Message Listener (REGISTER FIRST) ---
 chrome.runtime.onMessage.addListener((request: BridgeMessage, sender, sendResponse) => {
-    // console.log("WebMark Pro: Received message", request.action);
+    // console.log("Sci-Lighter: Received message", request.action);
 
     if (request.action === 'PING') {
         sendResponse('PONG');
@@ -20,7 +20,7 @@ chrome.runtime.onMessage.addListener((request: BridgeMessage, sender, sendRespon
     if (request.action === 'SYNC_LOCALE') {
         const payload = request.payload as LocalePayload;
         currentLocale = payload.locale;
-        console.log("WebMark Pro: Locale synced to", currentLocale);
+        console.log("Sci-Lighter: Locale synced to", currentLocale);
         return true;
     }
 
@@ -38,7 +38,7 @@ chrome.runtime.onMessage.addListener((request: BridgeMessage, sender, sendRespon
                 textContent: article?.textContent || fallback.innerText
             });
         } catch (e) {
-            console.error("WebMark Pro: Extraction Error", e);
+            console.error("Sci-Lighter: Extraction Error", e);
             sendResponse(null);
         }
         return true;
@@ -56,7 +56,7 @@ chrome.runtime.onMessage.addListener((request: BridgeMessage, sender, sendRespon
                 setTimeout(() => mark.classList.remove('ring-2', 'ring-offset-1', 'ring-blue-500'), 2000);
             }
         } catch (e) {
-            console.error("WebMark Pro: Scroll Error", e);
+            console.error("Sci-Lighter: Scroll Error", e);
         }
         return true;
     }
@@ -65,7 +65,7 @@ chrome.runtime.onMessage.addListener((request: BridgeMessage, sender, sendRespon
         try {
             const payload = request.payload as any; // TextAnnotation type
             if (markInstance && payload.text) {
-                console.log("WebMark Pro: Creating highlight", payload.text);
+                console.log("Sci-Lighter: Creating highlight", payload.text);
                 
                 const options = {
                     className: `highlight-${payload.variant || 'highlight'}`,
@@ -96,7 +96,7 @@ chrome.runtime.onMessage.addListener((request: BridgeMessage, sender, sendRespon
                         elem.addEventListener('click', (e) => {
                             e.preventDefault();
                             e.stopPropagation();
-                            console.log("WebMark Pro: Highlight clicked", payload.id);
+                            console.log("Sci-Lighter: Highlight clicked", payload.id);
                             chrome.runtime.sendMessage({
                                 action: 'HIGHLIGHT_CLICKED',
                                 payload: { id: payload.id }
@@ -107,14 +107,14 @@ chrome.runtime.onMessage.addListener((request: BridgeMessage, sender, sendRespon
 
                 // Precision Mode: Use markRanges if offsets are available
                 if (payload.startOffset !== undefined && payload.endOffset !== undefined && payload.startOffset >= 0) {
-                     console.log("WebMark Pro: Using precision marking", payload.startOffset, payload.endOffset);
+                     console.log("Sci-Lighter: Using precision marking", payload.startOffset, payload.endOffset);
                      markInstance.markRanges([{
                          start: payload.startOffset,
                          length: payload.endOffset - payload.startOffset
                      }], options);
                 } else {
                     // Fallback Mode: Mark all occurrences
-                    console.log("WebMark Pro: Using text marking (fallback)");
+                    console.log("Sci-Lighter: Using text marking (fallback)");
                     markInstance.mark(payload.text, options);
                 }
             }
@@ -212,9 +212,9 @@ const handleSelection = () => {
                 start: start,
                 length: text.length
             };
-            console.log("WebMark Pro: Captured selection at offset", start);
+            console.log("Sci-Lighter: Captured selection at offset", start);
         } catch (e) {
-            console.warn("WebMark Pro: Failed to calculate offset", e);
+            console.warn("Sci-Lighter: Failed to calculate offset", e);
         }
         
         chrome.runtime.sendMessage({
