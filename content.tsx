@@ -1,12 +1,37 @@
+import React from 'react';
+import { createRoot } from 'react-dom/client';
 import Mark from 'mark.js';
 import { Readability } from '@mozilla/readability';
 import { BridgeAction, BridgeMessage, SelectionPayload, ScrollPayload, LocalePayload } from './services/bridge';
+import PageOverlay from './components/PageOverlay';
 
-console.log("Sci-Lighter: Content script loading...");
+console.log("Sci-Lighter: Content script loading (React Mode)...");
 
 // --- Global State ---
 let markInstance: any = null;
 let currentLocale: 'en' | 'pt' = 'en';
+
+// --- Mount React Overlay ---
+const mountOverlay = () => {
+    const overlayId = 'sci-lighter-overlay-root';
+    if (document.getElementById(overlayId)) return;
+
+    const overlayContainer = document.createElement('div');
+    overlayContainer.id = overlayId;
+    document.body.appendChild(overlayContainer);
+
+    const root = createRoot(overlayContainer);
+    root.render(<PageOverlay />);
+    console.log("Sci-Lighter: PageOverlay mounted");
+};
+
+// Mount immediately
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', mountOverlay);
+} else {
+    mountOverlay();
+}
+
 
 // --- Message Listener (REGISTER FIRST) ---
 chrome.runtime.onMessage.addListener((request: BridgeMessage, sender, sendResponse) => {
@@ -118,8 +143,68 @@ chrome.runtime.onMessage.addListener((request: BridgeMessage, sender, sendRespon
                     markInstance.mark(payload.text, options);
                 }
             }
+            sendResponse({ success: true });
         } catch (e) {
-            console.error("WebMark Pro: Create Highlight Error", e);
+            console.error("Sci-Lighter: Create Highlight Error", e);
+            sendResponse({ success: false, error: (e as Error).message });
+        }
+        return true;
+    }
+
+    if (request.action === 'BATCH_CREATE_HIGHLIGHTS') {
+        try {
+            const annotations = request.payload as any[];
+            if (markInstance && annotations && annotations.length > 0) {
+                console.log(`Sci-Lighter: Batch creating ${annotations.length} highlights`);
+                
+                annotations.forEach(payload => {
+                    const options = {
+                        className: `highlight-${payload.variant || 'highlight'}`,
+                        each: (elem: HTMLElement) => {
+                            elem.setAttribute('data-annotation-id', payload.id);
+                            elem.style.cursor = 'pointer';
+                            elem.style.color = 'inherit';
+                            
+                            if (payload.variant === 'underline') {
+                                elem.style.backgroundColor = 'transparent';
+                                elem.style.borderBottom = `2px solid ${payload.color}`;
+                                elem.style.paddingBottom = '1px';
+                            } else {
+                                let color = payload.color;
+                                if (color.startsWith('#') && color.length === 7) {
+                                    const r = parseInt(color.slice(1, 3), 16);
+                                    const g = parseInt(color.slice(3, 5), 16);
+                                    const b = parseInt(color.slice(5, 7), 16);
+                                    color = `rgba(${r}, ${g}, ${b}, 0.4)`;
+                                }
+                                elem.style.backgroundColor = color;
+                            }
+
+                            elem.addEventListener('click', (e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                chrome.runtime.sendMessage({
+                                    action: 'HIGHLIGHT_CLICKED',
+                                    payload: { id: payload.id }
+                                });
+                            });
+                        }
+                    };
+
+                    if (payload.startOffset !== undefined && payload.endOffset !== undefined && payload.startOffset >= 0) {
+                        markInstance.markRanges([{
+                            start: payload.startOffset,
+                            length: payload.endOffset - payload.startOffset
+                        }], options);
+                    } else {
+                        markInstance.mark(payload.text, options);
+                    }
+                });
+            }
+            sendResponse({ success: true });
+        } catch (e) {
+            console.error("Sci-Lighter: Batch Create Error", e);
+            sendResponse({ success: false, error: (e as Error).message });
         }
         return true;
     }
@@ -150,8 +235,10 @@ chrome.runtime.onMessage.addListener((request: BridgeMessage, sender, sendRespon
                     }
                 }
             });
+            sendResponse({ success: true });
         } catch (e) {
-             console.error("WebMark Pro: Update Highlight Error", e);
+             console.error("Sci-Lighter: Update Highlight Error", e);
+             sendResponse({ success: false, error: (e as Error).message });
         }
         return true;
     }
@@ -175,7 +262,9 @@ chrome.runtime.onMessage.addListener((request: BridgeMessage, sender, sendRespon
         return true;
     }
 
-    return true;
+    // Pass through to React component if needed? 
+    // Handled by React useEffect listener, so we don't need to do anything here except NOT block it.
+    return false; // Allow other listeners
 });
 
 // --- Initialization ---
@@ -247,4 +336,3 @@ try {
 }
 
 console.log("WebMark Pro: Content script loaded successfully");
-

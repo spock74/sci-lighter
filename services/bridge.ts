@@ -12,7 +12,12 @@ export type BridgeAction =
   | 'TEXT_SELECTED'
   | 'SYNC_LOCALE'
   | 'CLEAR_HIGHLIGHTS'
-  | 'HIGHLIGHT_CLICKED';
+  | 'HIGHLIGHT_CLICKED'
+  | 'BATCH_CREATE_HIGHLIGHTS'
+  | 'SYNC_DRAWINGS'
+  | 'SAVE_DRAWINGS'
+  | 'SET_TOOL'
+  | 'TOGGLE_OVERLAY';
 
 // Payload Types
 export interface BridgeMessage<T = any> {

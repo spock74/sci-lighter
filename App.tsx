@@ -12,6 +12,7 @@ import SelectionMenu from './components/SelectionMenu';
 import AIInsightsPanel from './components/AIInsightsPanel';
 import AnnotationEditModal from './components/AnnotationEditModal';
 import { analyzeAnnotations } from './services/gemini';
+import { sendToContentScript } from './services/bridge';
 import { broadcastUpdate } from './services/cloud';
 import { clearProjectData } from './services/db';
 import { useLanguage } from './LanguageContext';
@@ -71,20 +72,30 @@ const App: React.FC = () => {
   const [editingAnnotation, setEditingAnnotation] = useState<TextAnnotation | null>(null);
   const [aiAnalysisResult, setAiAnalysisResult] = useState<string | null>(null);
 
-  // Listen for Highlight Clicks from Content Script
+  // Initialize Headless Controller
   React.useEffect(() => {
-    const handleMessage = (request: any) => {
-      if (request.action === 'HIGHLIGHT_CLICKED' && request.payload?.id) {
-        const annotation = project.textAnnotations.find(a => a.id === request.payload.id);
-        if (annotation) {
-          setEditingAnnotation(annotation);
-          setWorkbenchOpen(false); // Ensure we focus on the modal
+    // Dynamically import to avoid circular dependencies during initial load if any,
+    // though distinct files usually handles it.
+    const { ProjectController } = require('./services/ProjectController');
+    const controller = new ProjectController();
+
+    // Listen for HIGHLIGHT_CLICKED here for UI-specific actions that Controller can't do (like setting React State)
+    const handleUiMessages = (request: any) => {
+        if (request.action === 'HIGHLIGHT_CLICKED' && request.payload?.id) {
+            const annotation = useStore.getState().project.textAnnotations.find((a: any) => a.id === request.payload.id);
+            if (annotation) {
+                setEditingAnnotation(annotation);
+                setWorkbenchOpen(false);
+            }
         }
-      }
     };
-    chrome.runtime.onMessage.addListener(handleMessage);
-    return () => chrome.runtime.onMessage.removeListener(handleMessage);
-  }, [project.textAnnotations]);
+    chrome.runtime.onMessage.addListener(handleUiMessages);
+
+    return () => {
+        controller.dispose();
+        chrome.runtime.onMessage.removeListener(handleUiMessages);
+    };
+  }, []);
 
   const handleDeleteTextAnnotation = useCallback((id: string) => {
     pushToUndo();

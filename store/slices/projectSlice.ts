@@ -26,6 +26,7 @@ export const createProjectSlice: StateCreator<AppState, [], [], ProjectSlice> = 
 
   setProject: (projectUpdate) => {
     const nextProject = typeof projectUpdate === 'function' ? projectUpdate(get().project) : projectUpdate;
+    console.log("Sci-Lighter: setProject called, saving to DB...", nextProject.id);
     set({ project: nextProject });
     saveProjectToDB(nextProject);
   },

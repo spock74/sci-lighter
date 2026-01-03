@@ -43,7 +43,7 @@ export default defineConfig(({ mode }) => {
           input: {
             panel: path.resolve(__dirname, 'panel.html'),
             background: path.resolve(__dirname, 'background.ts'),
-            content: path.resolve(__dirname, 'content.ts'),
+            content: path.resolve(__dirname, 'content.tsx'),
           },
           output: {
             entryFileNames: `assets/[name].js`,

@@ -26,7 +26,10 @@ export const ThemeProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     } catch (error) {
       console.warn('Could not access localStorage for theme. Defaulting to system preference.');
     }
-    return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+    if (typeof window !== 'undefined' && window.matchMedia) {
+        return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+    }
+    return 'light';
   });
 
   useEffect(() => {

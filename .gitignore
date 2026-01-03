@@ -24,6 +24,8 @@ dist-ssr
 *.ntvs*
 *.njsproj
 *.sln
+# Analysis Reports
+DEAD_CODE_REPORT.md
 *.sw?
 
 

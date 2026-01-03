@@ -5,6 +5,7 @@
   "description": "A Manifest V3 compliant high-performance annotation and sketching tool for researchers.",
   "permissions": [
     "storage",
+    "unlimitedStorage",
     "sidePanel",
     "activeTab",
     "scripting",
